@@ -248,9 +248,10 @@ instance : add_comm_group (M →L[R] M₂) :=
 by refine {zero := 0, add := (+), neg := has_neg.neg, ..};
    intros; ext; simp
 
-@[simp] lemma sub_apply (x : M) : (f - g) x = f x - g x := rfl
-@[simp, move_cast] lemma coe_sub : (((f - g) : M →L[R] M₂) : M →ₗ[R] M₂) = (f : M →ₗ[R] M₂) - g := rfl
-@[simp, move_cast] lemma coe_sub' : (((f - g) : M →L[R] M₂) : M → M₂) = (f : M → M₂) - g := rfl
+-- These lemmas not work as simp lemmas, since (f - g) rewrites to (f + -g)
+lemma sub_apply (x : M) : (f - g) x = f x - g x := rfl
+@[move_cast] lemma coe_sub : (((f - g) : M →L[R] M₂) : M →ₗ[R] M₂) = (f : M →ₗ[R] M₂) - g := rfl
+@[move_cast] lemma coe_sub' : (((f - g) : M →L[R] M₂) : M → M₂) = (f : M → M₂) - g := rfl
 
 end add
 
@@ -490,13 +491,21 @@ continuous_linear_map.ext e.apply_symm_apply
   (e.symm : M₂ →L[R] M).comp (e : M →L[R] M₂) = continuous_linear_map.id :=
 continuous_linear_map.ext e.symm_apply_apply
 
-@[simp] lemma symm_comp_self (e : M ≃L[R] M₂) :
+lemma symm_comp_self (e : M ≃L[R] M₂) :
   (e.symm : M₂ → M) ∘ (e : M → M₂) = id :=
 by{ ext x, exact symm_apply_apply e x }
 
-@[simp] lemma self_comp_symm (e : M ≃L[R] M₂) :
+lemma self_comp_symm (e : M ≃L[R] M₂) :
   (e : M → M₂) ∘ (e.symm : M₂ → M) = id :=
 by{ ext x, exact apply_symm_apply e x }
+
+@[simp] lemma symm_comp_self' (e : M ≃L[R] M₂) :
+  ((e.symm : M₂ →L[R] M) : M₂ → M) ∘ ((e : M →L[R] M₂) : M → M₂) = id :=
+symm_comp_self e
+
+@[simp] lemma self_comp_symm' (e : M ≃L[R] M₂) :
+  ((e : M →L[R] M₂) : M → M₂) ∘ ((e.symm : M₂ →L[R] M) : M₂ → M) = id :=
+self_comp_symm e
 
 @[simp] theorem symm_symm (e : M ≃L[R] M₂) : e.symm.symm = e :=
 by { ext x, refl }
