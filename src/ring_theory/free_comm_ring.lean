@@ -60,7 +60,8 @@ free_abelian_group.lift.add _ _ _
 @[simp] lemma lift_neg (x) : lift f (-x) = -lift f x :=
 free_abelian_group.lift.neg _ _
 
-@[simp] lemma lift_sub (x y) : lift f (x - y) = lift f x - lift f y :=
+-- (x - y) is not in simp-normal form, as it reduces to (x + -y)
+lemma lift_sub (x y) : lift f (x - y) = lift f x - lift f y :=
 free_abelian_group.lift.sub _ _ _
 
 @[simp] lemma lift_mul (x y) : lift f (x * y) = lift f x * lift f y :=
@@ -106,7 +107,8 @@ lift $ of ∘ f
 @[simp] lemma map_of (x : α) : map f (of x) = of (f x) := lift_of _ _
 @[simp] lemma map_add (x y) : map f (x + y) = map f x + map f y := lift_add _ _ _
 @[simp] lemma map_neg (x) : map f (-x) = -map f x := lift_neg _ _
-@[simp] lemma map_sub (x y) : map f (x - y) = map f x - map f y := lift_sub _ _ _
+-- (x - y) is not in simp-normal form, as it reduces to (x + -y)
+lemma map_sub (x y) : map f (x - y) = map f x - map f y := lift_sub _ _ _
 @[simp] lemma map_mul (x y) : map f (x * y) = map f x * map f y := lift_mul _ _ _
 @[simp] lemma map_pow (x) (n : ℕ) : map f (x ^ n) = (map f x) ^ n := lift_pow _ _ _
 
@@ -159,7 +161,8 @@ variables (s : set α) [decidable_pred s] (x y : free_comm_ring α)
 @[simp] lemma restriction_one : restriction s 1 = 1 := lift_one _
 @[simp] lemma restriction_add : restriction s (x + y) = restriction s x + restriction s y := lift_add _ _ _
 @[simp] lemma restriction_neg : restriction s (-x) = -restriction s x := lift_neg _ _
-@[simp] lemma restriction_sub : restriction s (x - y) = restriction s x - restriction s y := lift_sub _ _ _
+-- (x - y) is not in simp-normal form, as it reduces to (x + -y)
+lemma restriction_sub : restriction s (x - y) = restriction s x - restriction s y := lift_sub _ _ _
 @[simp] lemma restriction_mul : restriction s (x * y) = restriction s x * restriction s y := lift_mul _ _ _
 end restriction
 
@@ -235,7 +238,8 @@ free_ring.lift_of _ _
 free_ring.lift_neg _ _
 @[simp] protected lemma coe_add (x y : free_ring α) : ↑(x + y) = (x : free_comm_ring α) + y :=
 free_ring.lift_add _ _ _
-@[simp] protected lemma coe_sub (x y : free_ring α) : ↑(x - y) = (x : free_comm_ring α) - y :=
+-- (x - y) is not in simp-normal form, as it reduces to (x + -y)
+protected lemma coe_sub (x y : free_ring α) : ↑(x - y) = (x : free_comm_ring α) - y :=
 free_ring.lift_sub _ _ _
 @[simp] protected lemma coe_mul (x y : free_ring α) : ↑(x * y) = (x : free_comm_ring α) * y :=
 free_ring.lift_mul _ _ _

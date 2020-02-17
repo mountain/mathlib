@@ -213,7 +213,7 @@ instance subtype_domain.is_add_monoid_hom [Π i, add_monoid (β i)] {p : ι → 
   (- v).subtype_domain p = - v.subtype_domain p :=
 ext $ λ i, by simp only [neg_apply, subtype_domain_apply]
 
-@[simp] lemma subtype_domain_sub [Π i, add_group (β i)] {p : ι → Prop} [decidable_pred p] {v v' : Π₀ i, β i} :
+lemma subtype_domain_sub [Π i, add_group (β i)] {p : ι → Prop} [decidable_pred p] {v v' : Π₀ i, β i} :
   (v - v').subtype_domain p = v.subtype_domain p - v'.subtype_domain p :=
 ext $ λ i, by simp only [sub_apply, subtype_domain_apply]
 
@@ -378,7 +378,7 @@ ext $ λ i, by simp only [mk_apply]; split_ifs; refl
   mk s (-x) = -mk s x :=
 ext $ λ i, by simp only [neg_apply, mk_apply]; split_ifs; [refl, rw neg_zero]
 
-@[simp] lemma mk_sub [Π i, add_group (β i)] {s : finset ι} {x y : Π i : (↑s : set ι), β i.1} :
+lemma mk_sub [Π i, add_group (β i)] {s : finset ι} {x y : Π i : (↑s : set ι), β i.1} :
   mk s (x - y) = mk s x - mk s y :=
 ext $ λ i, by simp only [sub_apply, mk_apply]; split_ifs; [refl, rw sub_zero]
 

@@ -188,8 +188,8 @@ instance : is_add_group_hom f := { map_add := map_add f }
 @[simp] lemma map_neg (x : β) : f (- x) = - f x :=
 by rw [← neg_one_smul α, map_smul, neg_one_smul]
 
-@[simp] lemma map_sub (x y : β) : f (x - y) = f x - f y :=
-by simp [map_neg, map_add]
+lemma map_sub (x y : β) : f (x - y) = f x - f y :=
+by simp
 
 @[simp] lemma map_sum {ι} {t : finset ι} {g : ι → β} :
   f (t.sum g) = t.sum (λi, f (g i)) :=
@@ -254,7 +254,7 @@ by rw [lin.add]
 @[simp] lemma map_neg (x : β) : f (- x) = - f x :=
 by rw [← neg_one_smul α, lin.smul, neg_one_smul]
 
-@[simp] lemma map_sub (x y : β) : f (x - y) = f x - f y :=
+lemma map_sub (x y : β) : f (x - y) = f x - f y :=
 by simp [lin.map_neg, lin.map_add]
 
 end is_linear_map
@@ -495,4 +495,3 @@ theorem exists_card_smul_ge_sum (hs : s.nonempty) :
 exists_le_of_sum_le hs $ by rw [sum_const, ← nat.smul_def, smul_sum]
 
 end finset
-

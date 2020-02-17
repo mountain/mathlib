@@ -195,8 +195,8 @@ variables {R : Type*} [ring R] {a b c : R}
 @[simp] theorem neg_one_right (a : R) : commute a (-1) := semiconj_by.neg_one_right a
 @[simp] theorem neg_one_left (a : R): commute (-1) a := semiconj_by.neg_one_left a
 
-@[simp] theorem sub_right : commute a b → commute a c → commute a (b - c) := semiconj_by.sub_right
-@[simp] theorem sub_left : commute a c → commute b c → commute (a - b) c := semiconj_by.sub_left
+theorem sub_right : commute a b → commute a c → commute a (b - c) := semiconj_by.sub_right
+theorem sub_left : commute a c → commute b c → commute (a - b) c := semiconj_by.sub_left
 
 variables (hab : commute a b) (m n : ℤ)
 

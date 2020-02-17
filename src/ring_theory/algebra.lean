@@ -50,7 +50,7 @@ is_ring_hom.map_add _
 @[simp] lemma map_neg (r : R) : algebra_map A (-r) = -algebra_map A r :=
 is_ring_hom.map_neg _
 
-@[simp] lemma map_sub (r s : R) : algebra_map A (r - s) = algebra_map A r - algebra_map A s :=
+lemma map_sub (r s : R) : algebra_map A (r - s) = algebra_map A r - algebra_map A s :=
 is_ring_hom.map_sub _
 
 @[simp] lemma map_mul (r s : R) : algebra_map A (r * s) = algebra_map A r * algebra_map A s :=

@@ -43,7 +43,7 @@ is_add_hom.map_add _ x y
 @[simp] lemma mk_neg (s : finset ι) (x) : mk β s (-x) = -mk β s x :=
 is_add_group_hom.map_neg _ x
 
-@[simp] lemma mk_sub (s : finset ι) (x y) : mk β s (x - y) = mk β s x - mk β s y :=
+lemma mk_sub (s : finset ι) (x y) : mk β s (x - y) = mk β s x - mk β s y :=
 is_add_group_hom.map_sub _ x y
 
 instance of.is_add_group_hom (i : ι) : is_add_group_hom (of β i) :=
@@ -58,7 +58,7 @@ is_add_hom.map_add _ x y
 @[simp] lemma of_neg (i : ι) (x) : of β i (-x) = -of β i x :=
 is_add_group_hom.map_neg _ x
 
-@[simp] lemma of_sub (i : ι) (x y) : of β i (x - y) = of β i x - of β i y :=
+lemma of_sub (i : ι) (x y) : of β i (x - y) = of β i x - of β i y :=
 is_add_group_hom.map_sub _ x y
 
 theorem mk_inj (s : finset ι) : function.injective (mk β s) :=
@@ -127,7 +127,7 @@ is_add_hom.map_add _ x y
 @[simp] lemma to_group_neg (x) : to_group φ (-x) = -to_group φ x :=
 is_add_group_hom.map_neg _ x
 
-@[simp] lemma to_group_sub (x y) : to_group φ (x - y) = to_group φ x - to_group φ y :=
+lemma to_group_sub (x y) : to_group φ (x - y) = to_group φ x - to_group φ y :=
 is_add_group_hom.map_sub _ x y
 
 @[simp] lemma to_group_of (i) (x : β i) : to_group φ (of β i x) = φ i x :=

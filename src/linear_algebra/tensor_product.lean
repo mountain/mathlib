@@ -274,7 +274,7 @@ quotient_add_group.lift _
 begin
   refine (is_add_group_hom.mem_ker _).1 (add_group.closure_subset _ hx),
   clear hx x, rintro x (⟨m₁, m₂, n, rfl⟩ | ⟨m, n₁, n₂, rfl⟩ | ⟨q, m, n, rfl⟩);
-    simp [is_add_group_hom.mem_ker, -sub_eq_add_neg,
+    simp [is_add_group_hom.mem_ker,
       f.map_add, f.map_add₂, f.map_smul, f.map_smul₂, sub_self],
 end
 variable {f}

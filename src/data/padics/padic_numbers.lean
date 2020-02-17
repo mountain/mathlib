@@ -441,7 +441,7 @@ cau_seq.completion.of_rat_neg
 @[simp] lemma of_rat_mul : ∀ (x y : ℚ), of_rat p (x * y) = of_rat p x * of_rat p y :=
 cau_seq.completion.of_rat_mul
 
-@[simp] lemma of_rat_sub : ∀ (x y : ℚ), of_rat p (x - y) = of_rat p x - of_rat p y :=
+lemma of_rat_sub : ∀ (x y : ℚ), of_rat p (x - y) = of_rat p x - of_rat p y :=
 cau_seq.completion.of_rat_sub
 
 @[simp] lemma of_rat_div : ∀ (x y : ℚ), of_rat p (x / y) = of_rat p x / of_rat p y :=

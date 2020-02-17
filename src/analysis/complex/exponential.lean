@@ -724,7 +724,7 @@ instance angle.is_add_group_hom : is_add_group_hom (coe : ℝ → angle) :=
 @[simp] lemma coe_zero : ↑(0 : ℝ) = (0 : angle) := rfl
 @[simp] lemma coe_add (x y : ℝ) : ↑(x + y : ℝ) = (↑x + ↑y : angle) := rfl
 @[simp] lemma coe_neg (x : ℝ) : ↑(-x : ℝ) = -(↑x : angle) := rfl
-@[simp] lemma coe_sub (x y : ℝ) : ↑(x - y : ℝ) = (↑x - ↑y : angle) := rfl
+lemma coe_sub (x y : ℝ) : ↑(x - y : ℝ) = (↑x - ↑y : angle) := rfl
 @[simp] lemma coe_smul (x : ℝ) (n : ℕ) :
   ↑(add_monoid.smul n x : ℝ) = add_monoid.smul n (↑x : angle) :=
 add_monoid_hom.map_smul ⟨coe, coe_zero, coe_add⟩ _ _

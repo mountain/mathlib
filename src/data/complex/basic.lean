@@ -196,9 +196,10 @@ by refine { zero := 0, add := (+), neg := has_neg.neg, one := 1, mul := (*), ..}
 @[simp] lemma bit0_im (z : ℂ) : (bit0 z).im = bit0 z.im := eq.refl _
 @[simp] lemma bit1_im (z : ℂ) : (bit1 z).im = bit0 z.im := add_zero _
 
-@[simp] lemma sub_re (z w : ℂ) : (z - w).re = z.re - w.re := rfl
-@[simp] lemma sub_im (z w : ℂ) : (z - w).im = z.im - w.im := rfl
-@[simp, move_cast] lemma of_real_sub (r s : ℝ) : ((r - s : ℝ) : ℂ) = r - s := ext_iff.2 $ by simp
+lemma sub_re (z w : ℂ) : (z - w).re = z.re - w.re := rfl
+lemma sub_im (z w : ℂ) : (z - w).im = z.im - w.im := rfl
+@[move_cast] lemma of_real_sub (r s : ℝ) : ((r - s : ℝ) : ℂ) = r - s := ext_iff.2 $ by simp
+
 @[simp, move_cast] lemma of_real_pow (r : ℝ) (n : ℕ) : ((r ^ n : ℝ) : ℂ) = r ^ n :=
 by induction n; simp [*, of_real_mul, pow_succ]
 
@@ -279,7 +280,7 @@ if h : z = 0 then by simp [h] else
 (domain.mul_left_inj (mt conj_eq_zero.1 h)).1 $
 by rw [← conj_mul]; simp [h, -conj_mul]
 
-@[simp] lemma conj_sub (z w : ℂ) : conj (z - w) = conj z - conj w :=
+lemma conj_sub (z w : ℂ) : conj (z - w) = conj z - conj w :=
 by simp
 
 @[simp] lemma conj_div (z w : ℂ) : conj (z / w) = conj z / conj w :=

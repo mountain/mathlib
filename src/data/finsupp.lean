@@ -561,7 +561,7 @@ finset.sum_add_distrib
   {h : α → β → γ} : f.sum (λa b, - h a b) = - f.sum h :=
 f.support.sum_hom (@has_neg.neg γ _)
 
-@[simp] lemma sum_sub [add_comm_monoid β] [add_comm_group γ] {f : α →₀ β}
+lemma sum_sub [add_comm_monoid β] [add_comm_group γ] {f : α →₀ β}
   {h₁ h₂ : α → β → γ} :
   f.sum (λa b, h₁ a b - h₂ a b) = f.sum h₁ - f.sum h₂ :=
 by rw [sub_eq_add_neg, ←sum_neg, ←sum_add]; refl
@@ -998,7 +998,7 @@ variables [add_group β] {v v' : α' →₀ β}
   (- v).subtype_domain p = - v.subtype_domain p :=
 ext $ λ _, rfl
 
-@[simp] lemma subtype_domain_sub {v v' : α →₀ β} :
+lemma subtype_domain_sub {v v' : α →₀ β} :
   (v - v').subtype_domain p = v.subtype_domain p - v'.subtype_domain p :=
 ext $ λ _, rfl
 

@@ -70,7 +70,7 @@ instance : is_ring_hom (coe : ℤ[i] → ℂ) := to_complex.is_ring_hom
 @[simp] lemma to_complex_one : ((1 : ℤ[i]) : ℂ) = 1 := is_ring_hom.map_one coe
 @[simp] lemma to_complex_zero : ((0 : ℤ[i]) : ℂ) = 0 := is_ring_hom.map_zero coe
 @[simp] lemma to_complex_neg (x : ℤ[i]) : ((-x : ℤ[i]) : ℂ) = -x := is_ring_hom.map_neg coe
-@[simp] lemma to_complex_sub (x y : ℤ[i]) : ((x - y : ℤ[i]) : ℂ) = x - y := is_ring_hom.map_sub coe
+lemma to_complex_sub (x y : ℤ[i]) : ((x - y : ℤ[i]) : ℂ) = x - y := is_ring_hom.map_sub coe
 
 @[simp] lemma to_complex_inj {x y : ℤ[i]} : (x : ℂ) = y ↔ x = y :=
 by cases x; cases y; simp [to_complex_def₂]

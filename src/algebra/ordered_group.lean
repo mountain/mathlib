@@ -563,19 +563,19 @@ lemma sub_lt_sub_iff_left (a : α) {b c : α} : a - b < a - c ↔ c < b :=
 lemma sub_lt_sub_iff_right (c : α) : a - c < b - c ↔ a < b :=
 add_lt_add_iff_right _
 
-@[simp] lemma sub_nonneg : 0 ≤ a - b ↔ b ≤ a :=
+lemma sub_nonneg : 0 ≤ a - b ↔ b ≤ a :=
 have a - a ≤ a - b ↔ b ≤ a, from sub_le_sub_iff_left a,
 by rwa sub_self at this
 
-@[simp] lemma sub_nonpos : a - b ≤ 0 ↔ a ≤ b :=
+lemma sub_nonpos : a - b ≤ 0 ↔ a ≤ b :=
 have a - b ≤ b - b ↔ a ≤ b, from sub_le_sub_iff_right b,
 by rwa sub_self at this
 
-@[simp] lemma sub_pos : 0 < a - b ↔ b < a :=
+lemma sub_pos : 0 < a - b ↔ b < a :=
 have a - a < a - b ↔ b < a, from sub_lt_sub_iff_left a,
 by rwa sub_self at this
 
-@[simp] lemma sub_lt_zero : a - b < 0 ↔ a < b :=
+lemma sub_lt_zero : a - b < 0 ↔ a < b :=
 have a - b < b - b ↔ a < b, from sub_lt_sub_iff_right b,
 by rwa sub_self at this
 
@@ -608,7 +608,7 @@ sub_le_iff_le_add'
 lemma neg_add_le_iff_le_add' : -c + a ≤ b ↔ a ≤ b + c :=
 by rw [neg_add_le_iff_le_add, add_comm]
 
-@[simp] lemma neg_le_sub_iff_le_add : -b ≤ a - c ↔ c ≤ a + b :=
+lemma neg_le_sub_iff_le_add : -b ≤ a - c ↔ c ≤ a + b :=
 le_sub_iff_add_le.trans neg_add_le_iff_le_add'
 
 lemma neg_le_sub_iff_le_add' : -a ≤ b - c ↔ c ≤ a + b :=
@@ -643,7 +643,7 @@ by rw [sub_lt_iff_lt_add', add_comm]
 lemma neg_add_lt_iff_lt_add_right : -c + a < b ↔ a < b + c :=
 by rw [neg_add_lt_iff_lt_add, add_comm]
 
-@[simp] lemma neg_lt_sub_iff_lt_add : -b < a - c ↔ c < a + b :=
+lemma neg_lt_sub_iff_lt_add : -b < a - c ↔ c < a + b :=
 lt_sub_iff_add_lt.trans neg_add_lt_iff_lt_add_right
 
 lemma neg_lt_sub_iff_lt_add' : -a < b - c ↔ c < a + b :=

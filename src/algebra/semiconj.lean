@@ -216,11 +216,11 @@ by simp only [semiconj_by, h.eq, neg_mul_eq_neg_mul_symm, mul_neg_eq_neg_mul_sym
 @[simp] lemma neg_one_left (x : R) : semiconj_by (-1) x x :=
 (one_left x).neg_left
 
-@[simp] lemma sub_right (h : semiconj_by a x y) (h' : semiconj_by a x' y') :
+lemma sub_right (h : semiconj_by a x y) (h' : semiconj_by a x' y') :
   semiconj_by a (x - x') (y - y') :=
 h.add_right h'.neg_right
 
-@[simp] lemma sub_left (ha : semiconj_by a x y) (hb : semiconj_by b x y) :
+lemma sub_left (ha : semiconj_by a x y) (hb : semiconj_by b x y) :
   semiconj_by (a - b) x y :=
 ha.add_left hb.neg_left
 

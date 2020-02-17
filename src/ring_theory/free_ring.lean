@@ -57,7 +57,8 @@ free_abelian_group.lift.add _ _ _
 @[simp] lemma lift_neg (x) : lift f (-x) = -lift f x :=
 free_abelian_group.lift.neg _ _
 
-@[simp] lemma lift_sub (x y) : lift f (x - y) = lift f x - lift f y :=
+-- (x - y) is not in simp-normal form, as it reduces to (x + -y)
+lemma lift_sub (x y) : lift f (x - y) = lift f x - lift f y :=
 free_abelian_group.lift.sub _ _ _
 
 @[simp] lemma lift_mul (x y) : lift f (x * y) = lift f x * lift f y :=
@@ -101,7 +102,8 @@ lift $ of ∘ f
 @[simp] lemma map_of (x : α) : map f (of x) = of (f x) := lift_of _ _
 @[simp] lemma map_add (x y) : map f (x + y) = map f x + map f y := lift_add _ _ _
 @[simp] lemma map_neg (x) : map f (-x) = -map f x := lift_neg _ _
-@[simp] lemma map_sub (x y) : map f (x - y) = map f x - map f y := lift_sub _ _ _
+-- (x - y) is not in simp-normal form, as it reduces to (x + -y)
+lemma map_sub (x y) : map f (x - y) = map f x - map f y := lift_sub _ _ _
 @[simp] lemma map_mul (x y) : map f (x * y) = map f x * map f y := lift_mul _ _ _
 @[simp] lemma map_pow (x) (n : ℕ) : map f (x ^ n) = (map f x) ^ n := lift_pow _ _ _
 

@@ -100,7 +100,7 @@ instance : has_coe ℤ_[p] ℚ_[p] := ⟨subtype.val⟩
 @[simp, move_cast] lemma coe_neg : ∀ (z1 : ℤ_[p]), (↑(-z1) : ℚ_[p]) = -↑z1
 | ⟨_, _⟩ := rfl
 
-@[simp, move_cast] lemma coe_sub : ∀ (z1 z2 : ℤ_[p]), (↑(z1 - z2) : ℚ_[p]) = ↑z1 - ↑z2
+@[move_cast] lemma coe_sub : ∀ (z1 z2 : ℤ_[p]), (↑(z1 - z2) : ℚ_[p]) = ↑z1 - ↑z2
 | ⟨_, _⟩ ⟨_, _⟩ := rfl
 
 @[simp, squash_cast] lemma coe_one : (↑(1 : ℤ_[p]) : ℚ_[p]) = 1 := rfl

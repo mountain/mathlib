@@ -146,10 +146,10 @@ variables [add_group A] {a b c d : A}
 
 local attribute [simp] sub_eq_add_neg
 
-@[simp] lemma sub_left_inj : a - b = a - c ↔ b = c :=
+lemma sub_left_inj : a - b = a - c ↔ b = c :=
 (add_left_inj _).trans neg_inj'
 
-@[simp] lemma sub_right_inj : b - a = c - a ↔ b = c :=
+lemma sub_right_inj : b - a = c - a ↔ b = c :=
 add_right_inj _
 
 lemma sub_add_sub_cancel (a b c : A) : (a - b) + (b - c) = a - c :=

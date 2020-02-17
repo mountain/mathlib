@@ -1295,7 +1295,7 @@ congr_fun (int.eq_cast' _).symm n
 
 @[simp] lemma C_neg : C (-a) = -C a := is_ring_hom.map_neg C
 
-@[simp] lemma C_sub : C (a - b) = C a - C b := is_ring_hom.map_sub C
+lemma C_sub : C (a - b) = C a - C b := is_ring_hom.map_sub C
 
 instance eval₂.is_ring_hom {β} [comm_ring β]
   (f : α → β) [is_ring_hom f] {x : β} : is_ring_hom (eval₂ f x) :=
@@ -1307,7 +1307,7 @@ instance map.is_ring_hom {β} [comm_ring β]
   (f : α → β) [is_ring_hom f] : is_ring_hom (map f) :=
 eval₂.is_ring_hom (C ∘ f)
 
-@[simp] lemma map_sub {β} [comm_ring β]
+lemma map_sub {β} [comm_ring β]
   (f : α → β) [is_ring_hom f] : (p - q).map f = p.map f - q.map f := is_ring_hom.map_sub _
 
 @[simp] lemma map_neg {β} [comm_ring β]
@@ -1324,20 +1324,20 @@ by simp [int_cast_eq_C]
 
 @[simp] lemma coeff_neg (p : polynomial α) (n : ℕ) : coeff (-p) n = -coeff p n := rfl
 
-@[simp] lemma coeff_sub (p q : polynomial α) (n : ℕ) : coeff (p - q) n = coeff p n - coeff q n := rfl
+lemma coeff_sub (p q : polynomial α) (n : ℕ) : coeff (p - q) n = coeff p n - coeff q n := rfl
 
 @[simp] lemma eval₂_neg {β} [comm_ring β] (f : α → β) [is_ring_hom f] {x : β} :
   (-p).eval₂ f x = -p.eval₂ f x :=
 is_ring_hom.map_neg _
 
-@[simp] lemma eval₂_sub {β} [comm_ring β] (f : α → β) [is_ring_hom f] {x : β} :
+lemma eval₂_sub {β} [comm_ring β] (f : α → β) [is_ring_hom f] {x : β} :
   (p - q).eval₂ f x = p.eval₂ f x - q.eval₂ f x :=
 is_ring_hom.map_sub _
 
 @[simp] lemma eval_neg (p : polynomial α) (x : α) : (-p).eval x = -p.eval x :=
 is_ring_hom.map_neg _
 
-@[simp] lemma eval_sub (p q : polynomial α) (x : α) : (p - q).eval x = p.eval x - q.eval x :=
+lemma eval_sub (p q : polynomial α) (x : α) : (p - q).eval x = p.eval x - q.eval x :=
 is_ring_hom.map_sub _
 
 lemma degree_sub_lt (hd : degree p = degree q)
@@ -1665,7 +1665,7 @@ instance : nonzero_comm_ring (polynomial α) :=
 { ..polynomial.nonzero_comm_semiring,
   ..polynomial.comm_ring }
 
-@[simp] lemma degree_X_sub_C (a : α) : degree (X - C a) = 1 :=
+lemma degree_X_sub_C (a : α) : degree (X - C a) = 1 :=
 begin
   rw [sub_eq_add_neg, add_comm, ← @degree_X α],
   by_cases ha : a = 0,
@@ -1692,7 +1692,7 @@ section comm_ring
 
 variables [comm_ring α] {p q : polynomial α}
 
-@[simp] lemma mod_by_monic_X_sub_C_eq_C_eval (p : polynomial α) (a : α) : p %ₘ (X - C a) = C (p.eval a) :=
+lemma mod_by_monic_X_sub_C_eq_C_eval (p : polynomial α) (a : α) : p %ₘ (X - C a) = C (p.eval a) :=
 if h0 : (0 : α) = 1 then by letI := subsingleton_of_zero_eq_one α h0; exact subsingleton.elim _ _
 else
 by letI : nonzero_comm_ring α := nonzero_comm_ring.of_ne h0; exact
@@ -1921,7 +1921,7 @@ with_bot.coe_le_coe.1 (le_trans (card_roots_sub_C hp0) (le_of_eq $ degree_eq_nat
 @[simp] lemma mem_roots (hp : p ≠ 0) : a ∈ p.roots ↔ is_root p a :=
 by unfold roots; rw dif_neg hp; exact (classical.some_spec (exists_finset_roots hp)).2 _
 
-@[simp] lemma mem_roots_sub_C {p : polynomial α} {a x : α} (hp0 : 0 < degree p) :
+lemma mem_roots_sub_C {p : polynomial α} {a x : α} (hp0 : 0 < degree p) :
   x ∈ (p - C a).roots ↔ p.eval x = a :=
 (mem_roots (show p - C a ≠ 0, from mt sub_eq_zero.1 $ λ h,
     not_le_of_gt hp0 $ h.symm ▸ degree_C_le)).trans

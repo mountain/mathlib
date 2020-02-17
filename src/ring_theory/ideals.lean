@@ -225,7 +225,8 @@ def map_mk (I J : ideal α) : ideal I.quotient :=
 @[simp] lemma mk_zero (I : ideal α) : mk I 0 = 0 := rfl
 @[simp] lemma mk_add (I : ideal α) (a b : α) : mk I (a + b) = mk I a + mk I b := rfl
 @[simp] lemma mk_neg (I : ideal α) (a : α) : mk I (-a : α) = -mk I a := rfl
-@[simp] lemma mk_sub (I : ideal α) (a b : α) : mk I (a - b : α) = mk I a - mk I b := rfl
+-- (a - b) is not in simp-normal form, as it reduces to (a + -b)
+lemma mk_sub (I : ideal α) (a b : α) : mk I (a - b : α) = mk I a - mk I b := rfl
 @[simp] lemma mk_pow (I : ideal α) (a : α) (n : ℕ) : mk I (a ^ n : α) = mk I a ^ n :=
 by induction n; simp [*, pow_succ]
 

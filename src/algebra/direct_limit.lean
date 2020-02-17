@@ -219,7 +219,7 @@ module.direct_limit.of_f
 @[simp] lemma of_zero (i) : of G f i 0 = 0 := is_add_group_hom.map_zero _
 @[simp] lemma of_add (i x y) : of G f i (x + y) = of G f i x + of G f i y := is_add_hom.map_add _ _ _
 @[simp] lemma of_neg (i x) : of G f i (-x) = -of G f i x := is_add_group_hom.map_neg _ _
-@[simp] lemma of_sub (i x y) : of G f i (x - y) = of G f i x - of G f i y := is_add_group_hom.map_sub _ _ _
+lemma of_sub (i x y) : of G f i (x - y) = of G f i x - of G f i y := is_add_group_hom.map_sub _ _ _
 
 @[elab_as_eliminator]
 protected theorem induction_on {C : direct_limit G f → Prop} (z : direct_limit G f)
@@ -253,7 +253,7 @@ module.direct_limit.lift_of _ _ _
 @[simp] lemma lift_zero : lift G f P g Hg 0 = 0 := is_add_group_hom.map_zero _
 @[simp] lemma lift_add (x y) : lift G f P g Hg (x + y) = lift G f P g Hg x + lift G f P g Hg y := is_add_hom.map_add _ _ _
 @[simp] lemma lift_neg (x) : lift G f P g Hg (-x) = -lift G f P g Hg x := is_add_group_hom.map_neg _ _
-@[simp] lemma lift_sub (x y) : lift G f P g Hg (x - y) = lift G f P g Hg x - lift G f P g Hg y := is_add_group_hom.map_sub _ _ _
+lemma lift_sub (x y) : lift G f P g Hg (x - y) = lift G f P g Hg x - lift G f P g Hg y := is_add_group_hom.map_sub _ _ _
 
 lemma lift_unique (F : direct_limit G f → P) [is_add_group_hom F] (x) :
   F x = lift G f P (λ i x, F $ of G f i x) (λ i j hij x, by rw of_f) x :=
@@ -306,7 +306,7 @@ ideal.quotient.eq.2 $ subset_span $ or.inl ⟨i, j, hij, x, rfl⟩
 @[simp] lemma of_one (i) : of G f i 1 = 1 := is_ring_hom.map_one _
 @[simp] lemma of_add (i x y) : of G f i (x + y) = of G f i x + of G f i y := is_ring_hom.map_add _
 @[simp] lemma of_neg (i x) : of G f i (-x) = -of G f i x := is_ring_hom.map_neg _
-@[simp] lemma of_sub (i x y) : of G f i (x - y) = of G f i x - of G f i y := is_ring_hom.map_sub _
+lemma of_sub (i x y) : of G f i (x - y) = of G f i x - of G f i y := is_ring_hom.map_sub _
 @[simp] lemma of_mul (i x y) : of G f i (x * y) = of G f i x * of G f i y := is_ring_hom.map_mul _
 @[simp] lemma of_pow (i x) (n : ℕ) : of G f i (x ^ n) = of G f i x ^ n := is_semiring_hom.map_pow _ _ _
 
@@ -464,7 +464,7 @@ instance lift.is_ring_hom : is_ring_hom (lift G f P g Hg) :=
 @[simp] lemma lift_one : lift G f P g Hg 1 = 1 := is_ring_hom.map_one _
 @[simp] lemma lift_add (x y) : lift G f P g Hg (x + y) = lift G f P g Hg x + lift G f P g Hg y := is_ring_hom.map_add _
 @[simp] lemma lift_neg (x) : lift G f P g Hg (-x) = -lift G f P g Hg x := is_ring_hom.map_neg _
-@[simp] lemma lift_sub (x y) : lift G f P g Hg (x - y) = lift G f P g Hg x - lift G f P g Hg y := is_ring_hom.map_sub _
+lemma lift_sub (x y) : lift G f P g Hg (x - y) = lift G f P g Hg x - lift G f P g Hg y := is_ring_hom.map_sub _
 @[simp] lemma lift_mul (x y) : lift G f P g Hg (x * y) = lift G f P g Hg x * lift G f P g Hg y := is_ring_hom.map_mul _
 @[simp] lemma lift_pow (x) (n : ℕ) : lift G f P g Hg (x ^ n) = lift G f P g Hg x ^ n := is_semiring_hom.map_pow _ _ _
 

@@ -802,7 +802,10 @@ lemma C_sub : (C (a - a') : mv_polynomial σ α) = C a - C a' := is_ring_hom.map
 
 @[simp] lemma C_neg : (C (-a) : mv_polynomial σ α) = -C a := is_ring_hom.map_neg _
 
-@[simp] lemma coeff_sub (m : σ →₀ ℕ) (p q : mv_polynomial σ α) :
+@[simp] lemma coeff_neg (m : σ →₀ ℕ) (p : mv_polynomial σ α) :
+  coeff m (-p) = -coeff m p := finsupp.neg_apply
+
+lemma coeff_sub (m : σ →₀ ℕ) (p q : mv_polynomial σ α) :
   coeff m (p - q) = coeff m p - coeff m q := finsupp.sub_apply
 
 instance coeff.is_add_group_hom (m : σ →₀ ℕ) :
@@ -937,7 +940,12 @@ eval₂_one _ _
   rename f (p + q) = rename f p + rename f q :=
 eval₂_add _ _
 
-@[simp] lemma rename_sub {α} [comm_ring α]
+@[simp] lemma rename_neg {α} [comm_ring α]
+  (f : β → γ) (p : mv_polynomial β α) :
+  rename f (-p) = -rename f p :=
+eval₂_neg _ _ _
+
+lemma rename_sub {α} [comm_ring α]
   (f : β → γ) (p q : mv_polynomial β α) :
   rename f (p - q) = rename f p - rename f q :=
 eval₂_sub _ _ _

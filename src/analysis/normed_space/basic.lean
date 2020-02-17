@@ -100,10 +100,10 @@ by simp [dist_eq_norm]
 @[simp] lemma dist_neg_neg (g h : α) : dist (-g) (-h) = dist g h :=
 by simp only [dist_eq_norm, neg_sub_neg, norm_sub_rev]
 
-@[simp] lemma dist_sub_left (g h₁ h₂ : α) : dist (g - h₁) (g - h₂) = dist h₁ h₂ :=
+lemma dist_sub_left (g h₁ h₂ : α) : dist (g - h₁) (g - h₂) = dist h₁ h₂ :=
 by simp only [sub_eq_add_neg, dist_add_left, dist_neg_neg]
 
-@[simp] lemma dist_sub_right (g₁ g₂ h : α) : dist (g₁ - h) (g₂ - h) = dist g₁ g₂ :=
+lemma dist_sub_right (g₁ g₂ h : α) : dist (g₁ - h) (g₂ - h) = dist g₁ g₂ :=
 dist_add_right _ _ _
 
 /-- Triangle inequality for the norm. -/
