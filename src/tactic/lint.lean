@@ -85,10 +85,17 @@ when at least one test is positive.
 If `is_fast` is false, this test will be omitted from `#lint-`.
 -/
 meta structure linter :=
-(test : declaration → tactic (option string))
+(test : tactic $ declaration → tactic (option string))
 (no_errors_found : string)
 (errors_found : string)
 (is_fast : bool := tt)
+
+meta def linter.test' (l : linter) (d : declaration) : tactic (option string) :=
+do tac ← l.test, tac d
+
+local attribute [instance]
+private meta def coe_test : has_coe (declaration → tactic (option string)) (tactic _) :=
+⟨pure⟩
 
 /-- Takes a list of names that resolve to declarations of type `linter`,
 and produces a list of linters. -/
@@ -339,7 +346,7 @@ meta def doc_blame_report_thm : declaration → tactic (option string)
 
 /-- A linter for checking definition doc strings -/
 @[linter, priority 1450] meta def linter.doc_blame : linter :=
-{ test := λ d, mcond (bnot <$> has_attribute' `instance d.to_name) (doc_blame_report_defn d) (return none),
+{ test := pure $ λ d, mcond (bnot <$> has_attribute' `instance d.to_name) (doc_blame_report_defn d) (return none),
   no_errors_found := "No definitions are missing documentation.",
   errors_found := "DEFINITIONS ARE MISSING DOCUMENTATION STRINGS" }
 
@@ -526,7 +533,7 @@ match ty with
 | `(%%lhs ↔ _) := pure ff
 | (expr.pi n bi a b) :=
   if bi ≠ binder_info.inst_implicit ∧ ¬ b.has_var then
-    pure ff
+    pure tt
   else do
     l ← mk_local' n bi a,
     simp_is_conditional (b.instantiate_var l)
@@ -555,68 +562,82 @@ match ty with
 | ty := pure (ty, `(true))
 end
 
-private meta def for_each_critical_pair {α} (fn : name → tactic α) (sls : list name) :
+private meta def for_each_critical_pair {α} (fn : name → tactic α) (sls : rb_lmap name name) :
   expr → tactic (list α) | e :=
 if e.is_mvar then pure [] else do
-let go g := retrieve (do
-  set_goals [g],
-  sls.mmap $ λ sl, try_core $ do
-  applyc sl {md := transparency.reducible},
-  done,
-  fn sl),
-ip ← is_prop e,
-here_not ← if ip then mk_meta_var `(¬ %%e) >>= go else pure [],
-here_iff ← if ip then do
-    rhs ← mk_meta_var `(Prop),
-    g ← mk_meta_var `(%%e ↔ %%rhs),
-    go g
-  else
-    pure [],
-here_eq ← (do
-  ty ← infer_type e,
-  rhs ← mk_meta_var ty,
-  eq ← mk_mapp ``eq [ty, e, rhs],
-  g ← mk_meta_var eq,
-  go g),
-here_atom ← mk_meta_var e >>= go,
-let here := (do some res ← here_not ++ here_iff ++ here_eq ++ here_atom | [], pure res),
 cgr ← mk_specialized_congr_lemma_simp e,
-rec : list (list α) ← monad.sequence $ e.get_app_args.map_with_index (do λ i a,
-  if cgr.arg_kinds.inth i = congr_arg_kind.eq then
-    for_each_critical_pair a
-  else
-    pure []),
-pure (here ++ rec.join)
+list.join <$> monad.sequence (e.get_app_args.map_with_index $ λ i a,
+  if cgr.arg_kinds.inth i ≠ congr_arg_kind.eq then pure [] else do
+  let go g := retrieve (do
+    set_goals [g],
+    (sls.find e.get_app_fn.const_name).mmap $ λ sl, try_core $ do
+    applyc sl {md := transparency.reducible},
+    done,
+    fn sl),
+  ip ← is_prop e,
+  here_not ← if ip then mk_meta_var `(¬ %%e) >>= go else pure [],
+  here_iff ← if ip then do
+      rhs ← mk_meta_var `(Prop),
+      g ← mk_meta_var `(%%e ↔ %%rhs),
+      go g
+    else
+      pure [],
+  here_eq ← (do
+    ty ← infer_type e,
+    rhs ← mk_meta_var ty,
+    eq ← mk_mapp ``eq [ty, e, rhs],
+    g ← mk_meta_var eq,
+    go g),
+  here_atom ← mk_meta_var e >>= go,
+  let here := (do some res ← here_not ++ here_iff ++ here_eq ++ here_atom | [], pure res),
+  res ← for_each_critical_pair a,
+  pure (here ++ res))
 
-private meta def simp_nonconfl (d : declaration) : tactic (option string) := do
-tt ← is_simp_lemma d.to_name | pure none,
--- Sometimes, a definition is tagged @[simp] to add the equational lemmas to the simp set.
--- In this case, ignore the declaration if it is not a valid simp lemma by itself.
-tt ← is_valid_simp_lemma_cnst d.to_name | pure none,
-ff ← simp_is_conditional d.type | pure none,
+private meta def mk_simp_set : tactic (rb_lmap name name) :=
+retrieve $ rb_lmap.of_list <$> do
 env ← get_env,
 sls ← env.get_trusted_decls.mfilter (λ d, do
   tt ← is_simp_lemma d.to_name | pure ff,
   tt ← is_valid_simp_lemma_cnst d.to_name | pure ff,
   ff ← simp_is_conditional d.type | pure ff,
   pure tt),
-let sls := sls.map declaration.to_name,
+sls.mmap $ λ d, do
+lhs ← simp_lhs d.type,
+pure (lhs.get_app_fn.const_name, d.to_name)
+
+private meta def simp_nonconfl : tactic (declaration → tactic (option string)) := do
+ss ← mk_simp_set,
+pure $ λ d, do
+tt ← is_simp_lemma d.to_name | pure none,
+-- Sometimes, a definition is tagged @[simp] to add the equational lemmas to the simp set.
+-- In this case, ignore the declaration if it is not a valid simp lemma by itself.
+tt ← is_valid_simp_lemma_cnst d.to_name | pure none,
+ff ← simp_is_conditional d.type | pure none,
 prf ← mk_const d.to_name,
 ty ← infer_type prf,
 (lhs, rhs) ← simp_lhs_rhs_mvar ty,
 sls' ← simp_lemmas.mk_default,
 let cb (sl : name) : tactic (option string) := try_core (do
-  trace (lhs, rhs),
+  lhs ← instantiate_mvars lhs,
+  rhs ← instantiate_mvars rhs,
   (lhs', _) ← simplify sls' [] lhs {fail_if_unchanged:=ff},
   (rhs', _) ← simplify sls' [] rhs {fail_if_unchanged:=ff},
   fail_if_success $ is_def_eq lhs' rhs' transparency.reducible,
+  fail_if_success $ -- also fail if the lhs didn't reduce, dunno why this happens
+    is_def_eq lhs lhs' transparency.reducible,
+  lhs' ← pp lhs',
   lhs ← pp lhs,
-  rhs ← pp rhs,
+  rhs' ← pp rhs',
   pure $ format.to_string $ "unjoinable pair with " ++ to_fmt sl ++ ":" ++
-    (lhs.group.indent 0) ++ rhs.group.indent 0),
-errors ← for_each_critical_pair cb sls lhs,
+    lhs'.group.indent 0 ++
+    format.line ++ "↑" ++
+    lhs.group.indent 0 ++
+    format.line ++ "↓" ++
+    rhs'.group.indent 0),
+errors ← for_each_critical_pair cb ss lhs,
+let errors := (do some error ← errors | [], pure error),
 if errors.empty then pure none else
-pure $ pure $ "\n".intercalate (do some error ← errors | [], pure error)
+pure $ pure $ "\n\n".intercalate errors
 
 /-- A linter for simp lemmas whose lhs is not in simp-normal form, and which hence never fire. -/
 @[linter, priority 1387] meta def linter.simp_nonconfl : linter :=
@@ -645,7 +666,7 @@ cond verbose (old ++ new) old
 private meta def check_fold (printer : (declaration → tactic (option string)) → tactic (name_set × format))
 (verbose : bool) : name_set × format → linter → tactic (name_set × format)
 | (ns, s) ⟨tac, ok_string, warning_string, _⟩ :=
-do (new_ns, f) ← printer tac,
+do (new_ns, f) ← tac >>= printer,
    if f.is_nil then return $ (ns, append_when verbose s format!"/- OK: {ok_string}. -/\n")
   else return $ (ns.union new_ns, s ++ format!"/- {warning_string}: -/" ++ f ++ "\n\n")
 
@@ -772,6 +793,3 @@ decls.mmap' (λ d, try (nolint_attr.set d () tt))
 It will always succeed, even if some of the declarations do not exist. -/
 @[user_command] meta def apply_nolint_cmd (_ : parse $ tk "apply_nolint") : parser unit :=
 ident_* >>= ↑apply_nolint_tac
-
-set_option profiler true
-#lint_all

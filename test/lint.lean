@@ -50,7 +50,7 @@ meta def dummy_check (d : declaration) : tactic (option string) :=
 return $ if d.to_name.last = "foo" then some "gotcha!" else none
 
 meta def linter.dummy_linter : linter :=
-{ test := dummy_check,
+{ test := pure dummy_check,
   no_errors_found := "found nothing",
   errors_found := "found something" }
 

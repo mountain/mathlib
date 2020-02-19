@@ -19,7 +19,7 @@ end
 open tactic
 #eval do
 decl ← get_decl ``f_c,
-res ← linter.simp_nf.test decl,
+res ← linter.simp_nf.test' decl,
 -- linter complains
 guard $ res.is_some
 
@@ -51,6 +51,6 @@ end
 open tactic
 #eval do
 decl ← get_decl ``h_c,
-res ← linter.simp_nf.test decl,
+res ← linter.simp_nf.test' decl,
 -- TODO: linter should complain
 guard $ res.is_none
