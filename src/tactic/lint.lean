@@ -518,6 +518,113 @@ some <$> do
   errors_found := "LEFT-HAND SIDE NOT IN SIMP-NF.\n" ++
     "Some simp lemmas have a left-hand side that is not in simp-normal form." }
 
+private meta def simp_is_conditional : expr → tactic bool | ty := do
+ty ← whnf ty transparency.semireducible,
+match ty with
+| `(¬ %%lhs) := pure ff
+| `(%%lhs = _) := pure ff
+| `(%%lhs ↔ _) := pure ff
+| (expr.pi n bi a b) :=
+  if bi ≠ binder_info.inst_implicit ∧ ¬ b.has_var then
+    pure ff
+  else do
+    l ← mk_local' n bi a,
+    simp_is_conditional (b.instantiate_var l)
+| ty := pure ff
+end
+
+/--
+`simp_lhs_mvar ty` returns the left-hand side of a simp lemma with type `ty`.
+Instance-implicit arguments are instantiated using local constants and added to the local context,
+other arguments are instantiated using metavariables. -/
+private meta def simp_lhs_rhs_mvar : expr → tactic (expr × expr) | ty := do
+ty ← whnf ty transparency.reducible,
+-- We only detect a fixed set of simp relations here.
+-- This is somewhat justified since for a custom simp relation R,
+-- the simp lemma `R a b` is implicitly converted to `R a b ↔ true` as well.
+match ty with
+| `(¬ %%lhs) := pure (lhs, `(false))
+| `(%%lhs = %%rhs) := pure (lhs, rhs)
+| `(%%lhs ↔ %%rhs) := pure (lhs, rhs)
+| (expr.pi n bi a b) := do
+  l ← if bi = binder_info.inst_implicit then
+        mk_local' n bi a >>= note `_inst
+      else
+        mk_meta_var a,
+  simp_lhs_rhs_mvar (b.instantiate_var l)
+| ty := pure (ty, `(true))
+end
+
+private meta def for_each_critical_pair {α} (fn : name → tactic α) (sls : list name) :
+  expr → tactic (list α) | e :=
+if e.is_mvar then pure [] else do
+let go g := retrieve (do
+  set_goals [g],
+  sls.mmap $ λ sl, try_core $ do
+  applyc sl {md := transparency.reducible},
+  done,
+  fn sl),
+ip ← is_prop e,
+here_not ← if ip then mk_meta_var `(¬ %%e) >>= go else pure [],
+here_iff ← if ip then do
+    rhs ← mk_meta_var `(Prop),
+    g ← mk_meta_var `(%%e ↔ %%rhs),
+    go g
+  else
+    pure [],
+here_eq ← (do
+  ty ← infer_type e,
+  rhs ← mk_meta_var ty,
+  eq ← mk_mapp ``eq [ty, e, rhs],
+  g ← mk_meta_var eq,
+  go g),
+here_atom ← mk_meta_var e >>= go,
+let here := (do some res ← here_not ++ here_iff ++ here_eq ++ here_atom | [], pure res),
+cgr ← mk_specialized_congr_lemma_simp e,
+rec : list (list α) ← monad.sequence $ e.get_app_args.map_with_index (do λ i a,
+  if cgr.arg_kinds.inth i = congr_arg_kind.eq then
+    for_each_critical_pair a
+  else
+    pure []),
+pure (here ++ rec.join)
+
+private meta def simp_nonconfl (d : declaration) : tactic (option string) := do
+tt ← is_simp_lemma d.to_name | pure none,
+-- Sometimes, a definition is tagged @[simp] to add the equational lemmas to the simp set.
+-- In this case, ignore the declaration if it is not a valid simp lemma by itself.
+tt ← is_valid_simp_lemma_cnst d.to_name | pure none,
+ff ← simp_is_conditional d.type | pure none,
+env ← get_env,
+sls ← env.get_trusted_decls.mfilter (λ d, do
+  tt ← is_simp_lemma d.to_name | pure ff,
+  tt ← is_valid_simp_lemma_cnst d.to_name | pure ff,
+  ff ← simp_is_conditional d.type | pure ff,
+  pure tt),
+let sls := sls.map declaration.to_name,
+prf ← mk_const d.to_name,
+ty ← infer_type prf,
+(lhs, rhs) ← simp_lhs_rhs_mvar ty,
+sls' ← simp_lemmas.mk_default,
+let cb (sl : name) : tactic (option string) := try_core (do
+  trace (lhs, rhs),
+  (lhs', _) ← simplify sls' [] lhs {fail_if_unchanged:=ff},
+  (rhs', _) ← simplify sls' [] rhs {fail_if_unchanged:=ff},
+  fail_if_success $ is_def_eq lhs' rhs' transparency.reducible,
+  lhs ← pp lhs,
+  rhs ← pp rhs,
+  pure $ format.to_string $ "unjoinable pair with " ++ to_fmt sl ++ ":" ++
+    (lhs.group.indent 0) ++ rhs.group.indent 0),
+errors ← for_each_critical_pair cb sls lhs,
+if errors.empty then pure none else
+pure $ pure $ "\n".intercalate (do some error ← errors | [], pure error)
+
+/-- A linter for simp lemmas whose lhs is not in simp-normal form, and which hence never fire. -/
+@[linter, priority 1387] meta def linter.simp_nonconfl : linter :=
+{ test := simp_nonconfl,
+  no_errors_found := "Simp set is locally confluent",
+  errors_found := "SIMP SET IS NOT CONFLUENT.\n" ++
+    "Some pairs of unjoinable simp lemmas have been found." }
+
 /- Implementation of the frontend. -/
 
 /-- `get_checks slow extra use_only` produces a list of linters.
@@ -665,3 +772,6 @@ decls.mmap' (λ d, try (nolint_attr.set d () tt))
 It will always succeed, even if some of the declarations do not exist. -/
 @[user_command] meta def apply_nolint_cmd (_ : parse $ tk "apply_nolint") : parser unit :=
 ident_* >>= ↑apply_nolint_tac
+
+set_option profiler true
+#lint_all
