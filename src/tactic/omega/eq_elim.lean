@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Seul Baek
 
 Correctness lemmas for equality elimination.
-See 5.5 of http://www.decision-procedures.org/ for details.
+See 5.5 of <http://www.decision-procedures.org/> for details.
 -/
 
 import tactic.omega.clause
@@ -62,7 +62,7 @@ let a_n : int := get n as in
 let m : int := a_n + 1 in
 ((symmod b m) + (coeffs.val v (as.map (λ x, symmod x m)))) / m
 
-local notation as ` {` m ` ↦ ` a `}` := set a as m
+open_locale list.func
 
 def rhs : nat → int → list int → term
 | n b as :=
@@ -94,7 +94,7 @@ lemma rhs_correct_aux {v : nat → int} {m : int} {as : list int} :
       simp only [hk, list.length_map] }
   end
 
-local notation v ` ⟨` m ` ↦ ` a `⟩` := update m a v
+open_locale omega
 
 lemma rhs_correct {v : nat → int}
   {b : int} {as : list int} (n : nat) :
@@ -286,7 +286,7 @@ end
 
 /- The type of equality elimination rules. -/
 
-@[derive has_reflect]
+@[derive has_reflect, derive inhabited]
 inductive ee : Type
 | drop   : ee
 | nondiv : int → ee

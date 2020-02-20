@@ -25,6 +25,9 @@ section
 parameters {α : Type u} {β : α → Type v} (hash_fn : α → nat)
 variables {n : ℕ+} (data : bucket_array α β n)
 
+instance : inhabited (bucket_array α β n) :=
+⟨mk_array _ []⟩
+
 /-- Read the bucket corresponding to an element -/
 def read (a : α) : list Σ a, β a :=
 let bidx := hash_map.mk_idx n (hash_fn a) in
@@ -323,7 +326,7 @@ structure hash_map (α : Type u) [decidable_eq α] (β : α → Type v) :=
 /-- Construct an empty hash map with buffer size `nbuckets` (default 8). -/
 def mk_hash_map {α : Type u} [decidable_eq α] {β : α → Type v} (hash_fn : α → nat) (nbuckets := 8) : hash_map α β :=
 let n := if nbuckets = 0 then 8 else nbuckets in
-let nz : n > 0 := by abstract { cases nbuckets, {simp, tactic.comp_val}, simp [if_pos, nat.succ_ne_zero], apply nat.zero_lt_succ} in
+let nz : n > 0 := by abstract { cases nbuckets; simp [if_pos, nat.succ_ne_zero] } in
 { hash_fn  := hash_fn,
   size     := 0,
   nbuckets := ⟨n, nz⟩,

@@ -3,7 +3,7 @@ Copyright (c) 2018 Mario Carneiro. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Mario Carneiro
 
-Evaluate expressions in the language of commutative monoids and groups.
+Evaluate expressions in the language of additive, commutative monoids and groups.
 -/
 import algebra.group_power tactic.norm_num
 
@@ -259,6 +259,8 @@ do (e', p) ← eval c e, return (e', p)
 @[derive has_reflect]
 inductive normalize_mode | raw | term
 
+instance : inhabited normalize_mode := ⟨normalize_mode.term⟩
+
 meta def normalize (mode := normalize_mode.term) (e : expr) : tactic (expr × expr) := do
 pow_lemma ← simp_lemmas.mk.add_simp ``pow_one,
 let lemmas := match mode with
@@ -289,7 +291,7 @@ open tactic.abel
 local postfix `?`:9001 := optional
 
 /-- Tactic for solving equations in the language of
-  commutative monoids and groups.
+  *additive*, commutative monoids and groups.
   This version of `abel` fails if the target is not an equality
   that is provable by the axioms of commutative monoids/groups. -/
 meta def abel1 : tactic unit :=
@@ -311,7 +313,7 @@ do mode ← ident?, match mode with
 end
 
 /-- Tactic for solving equations in the language of
-  commutative monoids and groups.
+  *additive*, commutative monoids and groups.
   Attempts to prove the goal outright if there is no `at`
   specifier and the target is an equality, but if this
   fails it falls back to rewriting all monoid expressions

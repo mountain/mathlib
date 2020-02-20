@@ -37,6 +37,8 @@ section
   @[simp] theorem zero_re : (0 : ℤ√d).re = 0 := rfl
   @[simp] theorem zero_im : (0 : ℤ√d).im = 0 := rfl
 
+  instance : inhabited ℤ√d := ⟨0⟩
+
   /-- The one of the ring -/
   def one : ℤ√d := of_int 1
   instance : has_one ℤ√d := ⟨zsqrtd.one⟩
@@ -133,7 +135,7 @@ section
   by simp [ext]
 
   instance : char_zero ℤ√d :=
-  { cast_inj := λ m n, ⟨by simp [zsqrtd.ext], congr_arg _⟩ }
+  { cast_injective := λ m n, by simp [ext] }
 
   @[simp] theorem of_int_eq_coe (n : ℤ) : (of_int n : ℤ√d) = n :=
   by simp [ext]
@@ -460,7 +462,7 @@ parameter {d : ℕ}
   protected theorem mul_nonneg (a b : ℤ√d) : 0 ≤ a → 0 ≤ b → 0 ≤ a * b :=
   by repeat {rw ← nonneg_iff_zero_le}; exact nonneg_mul
 
-  theorem not_sq_le_succ (c d y) (h : c > 0) : ¬sq_le (y + 1) c 0 d :=
+  theorem not_sq_le_succ (c d y) (h : 0 < c) : ¬sq_le (y + 1) c 0 d :=
   not_le_of_gt $ mul_pos (mul_pos h $ nat.succ_pos _) $ nat.succ_pos _
 
   /-- A nonsquare is a natural number that is not equal to the square of an

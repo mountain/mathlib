@@ -40,8 +40,7 @@ variables [fintype k] [fintype l] [fintype m] [fintype n]
 variables [decidable_eq k] [decidable_eq l] [decidable_eq m] [decidable_eq n]
 variables {α : Type v}
 
-local infix ` ⬝ `:70 := matrix.mul
-local postfix `ᵀ` : 1500 := transpose
+open_locale matrix
 
 /-- `to_matrix` returns a matrix containing ones and zeros. `f.to_matrix i j` is `1` if
   `f i = some j` and `0` otherwise -/
@@ -76,6 +75,10 @@ begin
     rw finset.sum_eq_single fj;
     simp [h, eq_comm] {contextual := tt} }
 end
+
+lemma to_pequiv_mul_matrix [semiring α] (f : m ≃ m) (M : matrix m n α) :
+  (f.to_pequiv.to_matrix ⬝ M) = λ i, M (f i) :=
+by { ext i j, rw [mul_matrix_apply, equiv.to_pequiv_apply] }
 
 lemma to_matrix_trans [semiring α] (f : l ≃. m) (g : m ≃. n) :
   ((f.trans g).to_matrix : matrix l n α) = f.to_matrix ⬝ g.to_matrix :=
@@ -128,5 +131,10 @@ by rw [← to_matrix_trans, single_trans_single_of_ne hb, to_matrix_bot]
   (M : matrix k l α) : (single a b).to_matrix ⬝ ((single b c).to_matrix ⬝ M) =
   (single a c).to_matrix ⬝ M :=
 by rw [← matrix.mul_assoc, single_mul_single]
+
+/-- We can also define permutation matrices by permuting the rows of the identity matrix. -/
+lemma equiv_to_pequiv_to_matrix [has_one α] [has_zero α] (σ : equiv n n) (i j : n) :
+  σ.to_pequiv.to_matrix i j = (1 : matrix n n α) (σ i) j :=
+if_congr option.some_inj rfl rfl
 
 end pequiv

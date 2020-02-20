@@ -104,13 +104,12 @@ meta def aux_attr : user_attribute (name_map name) name :=
   parser    := lean.parser.ident }
 
 meta def map_namespace (src tgt : name) : command :=
-do decl ← get_decl `bool, -- random choice
-   let n := src.mk_string "_to_additive",
-   let decl := decl.update_name n,
+do let n := src.mk_string "_to_additive",
+   let decl := declaration.thm n [] `(unit) (pure (reflect ())),
    add_decl decl,
    aux_attr.set n tgt tt
 
-@[derive has_reflect]
+@[derive has_reflect, derive inhabited]
 structure value_type := (tgt : name) (doc : option string)
 
 meta def tokens_dict : native.rb_map string string :=
@@ -163,7 +162,7 @@ do
 
 meta def proceed_fields (env : environment) (src tgt : name) (prio : ℕ) : command :=
 let aux := proceed_fields_aux src tgt prio in
-do 
+do
 aux (λ n, pure $ list.map name.to_string $ (env.structure_fields n).get_or_else []) >>
 aux (λ n, (list.map (λ (x : name), "to_" ++ x.to_string) <$>
                             (ancestor_attr.get_param n <|> pure []))) >>
@@ -254,4 +253,3 @@ attribute [to_additive] eq_mul_of_inv_mul_eq
 attribute [to_additive] mul_eq_of_eq_inv_mul
 attribute [to_additive] mul_eq_of_eq_mul_inv
 attribute [to_additive neg_add] mul_inv
-

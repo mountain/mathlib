@@ -14,10 +14,10 @@ def left_coset [has_mul α] (a : α) (s : set α) : set α := (λ x, a * x) '' s
 @[to_additive right_add_coset]
 def right_coset [has_mul α] (s : set α) (a : α) : set α := (λ x, x * a) '' s
 
-local infix ` *l `:70 := left_coset
-local infix ` +l `:70 := left_add_coset
-local infix ` *r `:70 := right_coset
-local infix ` +r `:70 := right_add_coset
+localized "infix ` *l `:70 := left_coset" in coset
+localized "infix ` +l `:70 := left_add_coset" in coset
+localized "infix ` *r `:70 := right_coset" in coset
+localized "infix ` +r `:70 := right_add_coset" in coset
 
 section coset_mul
 variable [has_mul α]
@@ -70,8 +70,8 @@ attribute [to_additive right_add_coset_zero] right_coset_one
 end coset_monoid
 
 section coset_submonoid
-open is_submonoid
-variables [monoid α] (s : set α) [is_submonoid s]
+open submonoid
+variables [monoid α] (s : submonoid α)
 
 @[to_additive mem_own_left_add_coset]
 lemma mem_own_left_coset (a : α) : a ∈ a *l s :=
@@ -79,17 +79,17 @@ suffices a * 1 ∈ a *l s, by simpa,
 mem_left_coset a (one_mem s)
 
 @[to_additive mem_own_right_add_coset]
-lemma mem_own_right_coset (a : α) : a ∈ s *r a :=
-suffices 1 * a ∈ s *r a, by simpa,
+lemma mem_own_right_coset (a : α) : a ∈ (s : set α) *r a :=
+suffices 1 * a ∈ (s : set α) *r a, by simpa,
 mem_right_coset a (one_mem s)
 
 @[to_additive mem_left_add_coset_left_add_coset]
 lemma mem_left_coset_left_coset {a : α} (ha : a *l s = s) : a ∈ s :=
-by rw [←ha]; exact mem_own_left_coset s a
+by rw [←submonoid.mem_coe, ←ha]; exact mem_own_left_coset s a
 
 @[to_additive mem_right_add_coset_right_add_coset]
-lemma mem_right_coset_right_coset {a : α} (ha : s *r a = s) : a ∈ s :=
-by rw [←ha]; exact mem_own_right_coset s a
+lemma mem_right_coset_right_coset {a : α} (ha : (s : set α) *r a = s) : a ∈ s :=
+by rw [←submonoid.mem_coe, ←ha]; exact mem_own_right_coset s a
 
 end coset_submonoid
 
@@ -111,7 +111,7 @@ iff.intro
 end coset_group
 
 section coset_subgroup
-open is_submonoid
+open submonoid
 open is_subgroup
 variables [group α] (s : set α) [is_subgroup s]
 
@@ -170,7 +170,7 @@ lemma induction_on {C : quotient s → Prop} (x : quotient s)
 quotient.induction_on' x H
 
 @[to_additive]
-instance : has_coe α (quotient s) := ⟨mk⟩
+instance : has_coe_t α (quotient s) := ⟨mk⟩ -- note [use has_coe_t]
 
 @[elab_as_eliminator, to_additive]
 lemma induction_on' {C : quotient s → Prop} (x : quotient s)
@@ -207,7 +207,7 @@ def left_coset_equiv_subgroup (g : α) : left_coset g s ≃ s :=
 noncomputable def group_equiv_quotient_times_subgroup (hs : is_subgroup s) :
   α ≃ quotient s × s :=
 calc α ≃ Σ L : quotient s, {x : α // (x : quotient s)= L} :
-  equiv.equiv_fib quotient_group.mk
+  (equiv.sigma_preimage_equiv quotient_group.mk).symm
     ... ≃ Σ L : quotient s, left_coset (quotient.out' L) s :
   equiv.sigma_congr_right (λ L,
     begin rw ← eq_class_eq_left_coset,
@@ -241,3 +241,8 @@ have h : ∀ {x : quotient s} {a : α}, x ∈ t → a ∈ s →
   right_inv := λ ⟨⟨a, ha⟩, ⟨x, hx⟩⟩, show (_, _) = _, by simp [h hx ha] }
 
 end quotient_group
+
+library_note "use has_coe_t"
+"We use the class `has_coe_t` instead of `has_coe` if the first-argument is a variable.
+Using `has_coe` would cause looping of type-class inference. See
+<https://leanprover.zulipchat.com/#narrow/stream/113488-general/topic/remove.20all.20instances.20with.20variable.20domain>"

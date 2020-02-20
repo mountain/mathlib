@@ -122,7 +122,7 @@ instance : ordered_cancel_comm_monoid ℝ := by apply_instance
 instance : ordered_comm_monoid ℝ        := by apply_instance
 instance : domain ℝ                     := by apply_instance
 
-local attribute [instance] classical.prop_decidable
+open_locale classical
 
 noncomputable instance : discrete_linear_ordered_field ℝ :=
 { decidable_le := by apply_instance,
@@ -287,9 +287,13 @@ theorem Sup_le (S : set ℝ) (h₁ : ∃ x, x ∈ S) (h₂ : ∃ x, ∀ y ∈ S,
 by simp [Sup, h₁, h₂]; exact
 classical.some_spec (exists_sup S h₁ h₂) y
 
+section
+-- this proof times out without this
+local attribute [instance, priority 1000] classical.prop_decidable
 theorem lt_Sup (S : set ℝ) (h₁ : ∃ x, x ∈ S) (h₂ : ∃ x, ∀ y ∈ S, y ≤ x)
   {y} : y < Sup S ↔ ∃ z ∈ S, y < z :=
 by simpa [not_forall] using not_congr (@Sup_le S h₁ h₂ y)
+end
 
 theorem le_Sup (S : set ℝ) (h₂ : ∃ x, ∀ y ∈ S, y ≤ x) {x} (xS : x ∈ S) : x ≤ Sup S :=
 (Sup_le S ⟨_, xS⟩ h₂).1 (le_refl _) _ xS
@@ -315,9 +319,13 @@ begin
   { exact le_neg.2 (H _ hz) }
 end
 
+section
+-- this proof times out without this
+local attribute [instance, priority 1000] classical.prop_decidable
 theorem Inf_lt (S : set ℝ) (h₁ : ∃ x, x ∈ S) (h₂ : ∃ x, ∀ y ∈ S, x ≤ y)
   {y} : Inf S < y ↔ ∃ z ∈ S, z < y :=
 by simpa [not_forall] using not_congr (@le_Inf S h₁ h₂ y)
+end
 
 theorem Inf_le (S : set ℝ) (h₂ : ∃ x, ∀ y ∈ S, x ≤ y) {x} (xS : x ∈ S) : Inf S ≤ x :=
 (le_Inf S ⟨_, xS⟩ h₂).1 (le_refl _) _ xS
@@ -336,17 +344,17 @@ noncomputable instance : conditionally_complete_linear_order ℝ :=
     show a ≤ Sup s,
       from le_Sup s ‹bdd_above s› ‹a ∈ s›,
   cSup_le :=
-    assume (s : set ℝ) (a : ℝ) (_ : s ≠ ∅) (H : ∀b∈s, b ≤ a),
+    assume (s : set ℝ) (a : ℝ) (_ : s.nonempty) (H : ∀b∈s, b ≤ a),
     show Sup s ≤ a,
-      from Sup_le_ub s (set.exists_mem_of_ne_empty ‹s ≠ ∅›) H,
+      from Sup_le_ub s ‹s.nonempty› H,
   cInf_le :=
     assume (s : set ℝ) (a : ℝ) (_ : bdd_below s) (_ : a ∈ s),
     show Inf s ≤ a,
       from Inf_le s ‹bdd_below s› ‹a ∈ s›,
   le_cInf :=
-    assume (s : set ℝ) (a : ℝ) (_ : s ≠ ∅) (H : ∀b∈s, a ≤ b),
+    assume (s : set ℝ) (a : ℝ) (_ : s.nonempty) (H : ∀b∈s, a ≤ b),
     show a ≤ Inf s,
-      from lb_le_Inf s (set.exists_mem_of_ne_empty ‹s ≠ ∅›) H,
+      from lb_le_Inf s ‹s.nonempty› H,
   decidable_le := classical.dec_rel _,
  ..real.linear_order, ..real.lattice}
 
@@ -356,15 +364,14 @@ theorem Sup_of_not_bdd_above {s : set ℝ} (hs : ¬ bdd_above s) : lattice.Sup s
 dif_neg $ assume h, hs h.2
 
 theorem Sup_univ : real.Sup set.univ = 0 :=
-real.Sup_of_not_bdd_above $ λ h,
-Exists.dcases_on h $ λ x h', not_le_of_lt (lt_add_one _) $ h' (x + 1) $ set.mem_univ _
+real.Sup_of_not_bdd_above $ λ ⟨x, h⟩, not_le_of_lt (lt_add_one _) $ h (set.mem_univ _)
 
 theorem Inf_empty : lattice.Inf (∅ : set ℝ) = 0 :=
 show Inf ∅ = 0, by simp [Inf]; exact Sup_empty
 
 theorem Inf_of_not_bdd_below {s : set ℝ} (hs : ¬ bdd_below s) : lattice.Inf s = 0 :=
 have bdd_above {x | -x ∈ s} → bdd_below s, from
-  assume ⟨b, hb⟩, ⟨-b, assume x hxs, neg_le.2 $ hb _ $ by simp [hxs]⟩,
+  assume ⟨b, hb⟩, ⟨-b, assume x hxs, neg_le.2 $ hb $ by simp [hxs]⟩,
 have ¬ bdd_above {x | -x ∈ s}, from mt this hs,
 neg_eq_zero.2 $ Sup_of_not_bdd_above $ this
 
