@@ -464,21 +464,29 @@ do tt ← is_prop d.type | return none,
   no_errors_found := "No uses of `inhabited` arguments should be replaced with `nonempty`",
   errors_found := "USES OF `inhabited` SHOULD BE REPLACED WITH `nonempty`." }
 
-/-- `simp_lhs ty` returns the left-hand side of a simp lemma with type `ty`. -/
-private meta def simp_lhs : expr → tactic expr | ty := do
+/--
+`simp_lhs_rhs ty` returns the left-hand and right-hand side of a simp lemma with type `ty`.
+It also returns a name indicating whether the lemma is an iff, eq, not, or something else
+(`` `atom ``).
+-/
+private meta def simp_lhs_rhs : expr → tactic (expr × expr × name) | ty := do
 ty ← whnf ty transparency.reducible,
 -- We only detect a fixed set of simp relations here.
 -- This is somewhat justified since for a custom simp relation R,
 -- the simp lemma `R a b` is implicitly converted to `R a b ↔ true` as well.
 match ty with
-| `(¬ %%lhs) := pure lhs
-| `(%%lhs = _) := pure lhs
-| `(%%lhs ↔ _) := pure lhs
+| `(¬ %%lhs) := pure (lhs, `(false), `not)
+| `(%%lhs = %%rhs) := pure (lhs, rhs, `eq)
+| `(%%lhs ↔ %%rhs) := pure (lhs, rhs, `iff)
 | (expr.pi n bi a b) := do
   l ← mk_local' n bi a,
-  simp_lhs (b.instantiate_var l)
-| ty := pure ty
+  simp_lhs_rhs (b.instantiate_var l)
+| ty := pure (ty, `(true), `atom)
 end
+
+/-- `simp_lhs ty` returns the left-hand side of a simp lemma with type `ty`. -/
+private meta def simp_lhs (ty : expr): tactic expr :=
+prod.fst <$> simp_lhs_rhs ty
 
 private meta def heuristic_simp_lemma_extraction (prf : expr) : tactic (list name) :=
 prf.list_constant.to_list.mfilter is_simp_lemma
@@ -568,18 +576,18 @@ if e.is_mvar then pure [] else do
 cgr ← mk_specialized_congr_lemma_simp e,
 list.join <$> monad.sequence (e.get_app_args.map_with_index $ λ i a,
   if cgr.arg_kinds.inth i ≠ congr_arg_kind.eq then pure [] else do
-  let go g := retrieve (do
+  let go sty g := retrieve (do
     set_goals [g],
-    (sls.find e.get_app_fn.const_name).mmap $ λ sl, try_core $ do
+    (sls.find (e.get_app_fn.const_name ++ sty)).mmap $ λ sl, try_core $ do
     applyc sl {md := transparency.reducible},
     done,
     fn sl),
   ip ← is_prop e,
-  here_not ← if ip then mk_meta_var `(¬ %%e) >>= go else pure [],
+  here_not ← if ip then mk_meta_var `(¬ %%e) >>= go `not else pure [],
   here_iff ← if ip then do
       rhs ← mk_meta_var `(Prop),
       g ← mk_meta_var `(%%e ↔ %%rhs),
-      go g
+      go `iff g
     else
       pure [],
   here_eq ← (do
@@ -587,8 +595,8 @@ list.join <$> monad.sequence (e.get_app_args.map_with_index $ λ i a,
     rhs ← mk_meta_var ty,
     eq ← mk_mapp ``eq [ty, e, rhs],
     g ← mk_meta_var eq,
-    go g),
-  here_atom ← mk_meta_var e >>= go,
+    go `eq g),
+  here_atom ← mk_meta_var e >>= go `atom,
   let here := (do some res ← here_not ++ here_iff ++ here_eq ++ here_atom | [], pure res),
   res ← for_each_critical_pair a,
   pure (here ++ res))
@@ -602,8 +610,8 @@ sls ← env.get_trusted_decls.mfilter (λ d, do
   ff ← simp_is_conditional d.type | pure ff,
   pure tt),
 sls.mmap $ λ d, do
-lhs ← simp_lhs d.type,
-pure (lhs.get_app_fn.const_name, d.to_name)
+(lhs, _, sty) ← simp_lhs_rhs d.type,
+pure (lhs.get_app_fn.const_name ++ sty, d.to_name)
 
 private meta def simp_nonconfl : tactic (declaration → tactic (option string)) := do
 ss ← mk_simp_set,
