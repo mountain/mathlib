@@ -613,6 +613,7 @@ tt ← is_simp_lemma d.to_name | pure none,
 -- In this case, ignore the declaration if it is not a valid simp lemma by itself.
 tt ← is_valid_simp_lemma_cnst d.to_name | pure none,
 ff ← simp_is_conditional d.type | pure none,
+(λ tac, tactic.try_for 10000 tac <|> pure (some "timeout")) $ do -- last resort
 prf ← mk_const d.to_name,
 ty ← infer_type prf,
 (lhs, rhs) ← simp_lhs_rhs_mvar ty,
