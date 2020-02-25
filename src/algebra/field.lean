@@ -178,7 +178,7 @@ by simpa using div_add_div b a one_ne_zero hc
 
 lemma div_add' (a b c : α) (hc : c ≠ 0) :
   a / c + b = (a + b * c) / c :=
-by simpa using div_add_div b a one_ne_zero hc
+by rwa [add_comm, add_div', add_comm]
 
 end
 
