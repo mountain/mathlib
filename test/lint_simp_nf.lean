@@ -23,6 +23,11 @@ res ← linter.simp_nf.test decl,
 -- linter complains
 guard $ res.is_some
 
+#eval do
+decl ← get_decl ``f_c,
+res ← linter.simp_red.test decl,
+-- linter complains
+guard $ res.is_some
 
 
 
@@ -54,3 +59,9 @@ decl ← get_decl ``h_c,
 res ← linter.simp_nf.test decl,
 -- TODO: linter should complain
 guard $ res.is_none
+
+#eval do
+decl ← get_decl ``h_c,
+res ← linter.simp_red.test decl,
+-- linter complains
+guard $ res.is_some

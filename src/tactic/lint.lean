@@ -448,7 +448,7 @@ do tt ← is_prop d.type | return none,
   no_errors_found := "No uses of `inhabited` arguments should be replaced with `nonempty`",
   errors_found := "USES OF `inhabited` SHOULD BE REPLACED WITH `nonempty`." }
 
-/-- `simp_lhs_rhs ty` returns the left-hand and right-hand sides of a simp lemma with type `ty`. -/
+/-- `simp_lhs_rhs ty` returns the left-hand and right-hand side of a simp lemma with type `ty`. -/
 private meta def simp_lhs_rhs : expr → tactic (expr × expr) | ty := do
 ty ← whnf ty transparency.reducible,
 -- We only detect a fixed set of simp relations here.
@@ -465,8 +465,24 @@ match ty with
 end
 
 /-- `simp_lhs ty` returns the left-hand side of a simp lemma with type `ty`. -/
-private meta def simp_lhs (ty : expr) : tactic expr :=
+private meta def simp_lhs (ty : expr): tactic expr :=
 prod.fst <$> simp_lhs_rhs ty
+
+/-- `simp_is_conditional ty` returns true iff the simp lemma with type `ty` is conditional. -/
+private meta def simp_is_conditional : expr → tactic bool | ty := do
+ty ← whnf ty transparency.semireducible,
+match ty with
+| `(¬ %%lhs) := pure ff
+| `(%%lhs = _) := pure ff
+| `(%%lhs ↔ _) := pure ff
+| (expr.pi n bi a b) :=
+  if bi ≠ binder_info.inst_implicit ∧ ¬ b.has_var then
+    pure tt
+  else do
+    l ← mk_local' n bi a,
+    simp_is_conditional (b.instantiate_var l)
+| ty := pure ff
+end
 
 private meta def heuristic_simp_lemma_extraction (prf : expr) : tactic (list name) :=
 prf.list_constant.to_list.mfilter is_simp_lemma
@@ -558,6 +574,65 @@ pure $ "should not be marked simp"
   no_errors_found := "No commutativity lemma is marked simp.",
   errors_found := "COMMUTATIVITY LEMMA IS SIMP.\n" ++
     "Some commutativity lemmas are simp lemmas" }
+
+private meta def simp_red (d : declaration) : tactic (option string) := do
+tt ← is_simp_lemma d.to_name | pure none,
+-- Sometimes, a definition is tagged @[simp] to add the equational lemmas to the simp set.
+-- In this case, ignore the declaration if it is not a valid simp lemma by itself.
+tt ← is_valid_simp_lemma_cnst d.to_name | pure none,
+(λ tac, tactic.try_for 20000 tac <|> pure (some "timeout")) $ -- last resort
+(λ tac : tactic _, tac <|> pure none) $ -- tc resolution depth
+retrieve $ do
+reset_instance_cache,
+is_cond ← simp_is_conditional d.type,
+g ← mk_meta_var d.type,
+set_goals [g],
+intros,
+(lhs, rhs) ← target >>= simp_lhs_rhs,
+sls ← simp_lemmas.mk_default,
+let sls := sls.erase [
+  -- remove commutativity lemmas since they may not apply to substitution instances of the lhs
+  ``add_comm, ``bool.bor_comm, ``bool.band_comm, ``bool.bxor_comm,
+  -- TODO: remove once we have moved to Lean 3.6
+  ``sub_eq_add_neg
+  ],
+let sls' := sls.erase [d.to_name],
+check_dsimp ← has_attribute' `_refl_lemma d.to_name,
+let check_dsimp := ff, -- ignore dsimp for now
+-- TODO: what about rfl-lemmas?
+let simp t :=
+  if false ∧ check_dsimp then do
+    t' ← sls.dsimplify [] t {fail_if_unchanged := ff},
+    pure (t', default _)
+  else
+    simplify sls [] t {fail_if_unchanged := ff},
+(lhs', prf1) ← simplify sls [] lhs {fail_if_unchanged := ff},
+prf1_lems ← heuristic_simp_lemma_extraction prf1,
+if d.to_name ∈ prf1_lems then pure none else do
+(rhs', prf2) ← simplify sls [] rhs {fail_if_unchanged := ff},
+lhs'_eq_rhs' ← succeeds (is_def_eq lhs' rhs' transparency.reducible),
+lhs_in_nf ← succeeds (is_def_eq lhs' lhs transparency.reducible),
+if lhs'_eq_rhs' ∧ lhs'.get_app_fn.const_name = rhs'.get_app_fn.const_name then do
+  used_lemmas ← heuristic_simp_lemma_extraction (prf1 prf2),
+  pure $ pure $ "is redundant: by simp only " ++ to_string used_lemmas
+else if ¬ lhs_in_nf then do
+  lhs ← pp lhs,
+  lhs' ← pp lhs',
+  pure $ format.to_string $
+    to_fmt "Left-hand side simplifies from"
+      ++ lhs.group.indent 2 ++ format.line
+      ++ "to" ++ lhs'.group.indent 2 ++ format.line
+      ++ "using " ++ (to_fmt prf1_lems).indent 2 ++ format.line
+else
+  pure none
+
+/-- A linter for simp lemmas that are redundant, i.e. which can be derived from other simp lemmas. -/
+@[linter, priority 1388] meta def linter.simp_red : linter :=
+{ test := simp_red,
+  no_errors_found := "No simp lemma is redundant",
+  errors_found := "REDUNDANT SIMP LEMMAS.\n" ++
+    "Some simp lemmas never apply, because their left side simplifies using other simp lemmas.\n"
+      ++ "Additionally, some can be proven using `by simp`" }
 
 /- Implementation of the frontend. -/
 
