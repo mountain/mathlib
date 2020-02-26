@@ -148,11 +148,11 @@ by apply is_ring_hom.map_neg
 @[simp] lemma of_pow : (of (x ^ n) : localization α S) = (of x) ^ n :=
 by apply is_semiring_hom.map_pow
 
-@[simp] lemma of_is_unit (s : S) : is_unit (of s : localization α S) :=
-is_unit_unit $ to_units s
-
 @[simp] lemma of_is_unit' (s ∈ S) : is_unit (of s : localization α S) :=
 is_unit_unit $ to_units ⟨s, ‹s ∈ S›⟩
+
+@[simp] lemma of_is_unit (s : S) : is_unit (of s : localization α S) :=
+is_unit_unit $ to_units s
 
 @[simp] lemma coe_zero : ((0 : α) : localization α S) = 0 := rfl
 @[simp] lemma coe_one : ((1 : α) : localization α S) = 1 := rfl
@@ -161,26 +161,26 @@ is_unit_unit $ to_units ⟨s, ‹s ∈ S›⟩
 @[simp] lemma coe_mul : (↑(x * y) : localization α S) = x * y := of_mul _ _ _ _
 @[simp] lemma coe_neg : (↑(-x) : localization α S) = -x := of_neg _ _ _
 @[simp] lemma coe_pow : (↑(x ^ n) : localization α S) = x ^ n := of_pow _ _ _ _
-@[simp] lemma coe_is_unit (s : S) : is_unit ((s : α) : localization α S) := of_is_unit _ _ _
 @[simp] lemma coe_is_unit' (s ∈ S) : is_unit ((s : α) : localization α S) := of_is_unit' _ _ _ ‹s ∈ S›
+@[simp] lemma coe_is_unit (s : S) : is_unit ((s : α) : localization α S) := of_is_unit _ _ _
 end
 
-@[simp] lemma mk_self {x : α} {hx : x ∈ S} :
+lemma mk_self {x : α} {hx : x ∈ S} :
   (mk x ⟨x, hx⟩ : localization α S) = 1 :=
 quotient.sound ⟨1, is_submonoid.one_mem S,
 by simp only [subtype.coe_mk, is_submonoid.coe_one, mul_one, one_mul, sub_self]⟩
 
-@[simp] lemma mk_self' {s : S} :
+lemma mk_self' {s : S} :
   (mk s s : localization α S) = 1 :=
 by cases s; exact mk_self
 
-@[simp] lemma mk_self'' {s : S} :
+lemma mk_self'' {s : S} :
   (mk s.1 s : localization α S) = 1 :=
 mk_self'
 
 -- This lemma does not apply with simp, since (mk r s) simplifies to (r * s⁻¹).
 -- However, it could apply with dsimp.
-@[simp, nolint simp_nf]
+@[simp, nolint simp_nf simp_red]
 lemma coe_mul_mk (x y : α) (s : S) :
   ↑x * mk y s = mk (x * y) s :=
 quotient.sound $ r_of_eq $ by rw one_mul
@@ -191,16 +191,16 @@ by rw [coe_mul_mk, mul_one]
 
 -- This lemma does not apply with simp, since (mk r s) simplifies to (r * s⁻¹).
 -- However, it could apply with dsimp.
-@[simp, nolint simp_nf]
+@[simp, nolint simp_nf simp_red]
 lemma mk_mul_mk (x y : α) (s t : S) :
   mk x s * mk y t = mk (x * y) (s * t) := rfl
 
-@[simp] lemma mk_mul_cancel_left (r : α) (s : S) :
+lemma mk_mul_cancel_left (r : α) (s : S) :
   mk (↑s * r) s = r :=
 by rw [mk_eq_mul_mk_one, mul_comm ↑s, coe_mul,
        mul_assoc, ← mk_eq_mul_mk_one, mk_self', mul_one]
 
-@[simp] lemma mk_mul_cancel_right (r : α) (s : S) :
+lemma mk_mul_cancel_right (r : α) (s : S) :
   mk (r * s) s = r :=
 by rw [mul_comm, mk_mul_cancel_left]
 
@@ -267,7 +267,7 @@ lift'.is_ring_hom _ _ _
 
 -- This lemma does not apply with simp, since (mk r s) simplifies to (r * s⁻¹).
 -- However, it could apply with dsimp.
-@[simp, nolint simp_nf]
+@[simp, nolint simp_nf simp_red]
 lemma lift'_mk (g : S → units β) (hg : ∀ s, (g s : β) = f s) (r : α) (s : S) :
   lift' f g hg (mk r s) = f r * ↑(g s)⁻¹ := rfl
 

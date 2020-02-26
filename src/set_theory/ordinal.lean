@@ -26,13 +26,14 @@ local infix ` ≼i `:25 := initial_seg
 namespace initial_seg
 
 instance : has_coe (r ≼i s) (r ≼o s) := ⟨initial_seg.to_order_embedding⟩
+instance : has_coe_to_fun (r ≼i s) := ⟨λ _, α → β, λ f x, (f : r ≼o s) x⟩
 
 @[simp] theorem coe_fn_mk (f : r ≼o s) (o) :
   (@initial_seg.mk _ _ r s f o : α → β) = f := rfl
 
 @[simp] theorem coe_fn_to_order_embedding (f : r ≼i s) : (f.to_order_embedding : α → β) = f := rfl
 
-theorem coe_coe_fn (f : r ≼i s) : ((f : r ≼o s) : α → β) = f := rfl
+@[simp] theorem coe_coe_fn (f : r ≼i s) : ((f : r ≼o s) : α → β) = f := rfl
 
 theorem init' (f : r ≼i s) {a : α} {b : β} : s b (f a) → ∃ a', f a' = b :=
 f.init _ _
@@ -57,11 +58,13 @@ def of_iso (f : r ≃o s) : r ≼i s :=
   rcases f.2 _ _ h with ⟨a', rfl⟩, exact ⟨a', rfl⟩
 end⟩
 
-@[simp] theorem of_iso_apply (f : r ≃o s) (x : α) : of_iso f x = f x := rfl
+@[simp] theorem of_iso_apply (f : r ≃o s) (x : α) : (f : r ≼o s) x = f x := rfl
 
 @[simp] theorem refl_apply (x : α) : initial_seg.refl r x = x := rfl
 
 @[simp] theorem trans_apply (f : r ≼i s) (g : s ≼i t) (a : α) : (f.trans g) a = g (f a) := rfl
+
+#lint
 
 theorem unique_of_extensional [is_extensional β s] :
   well_founded r → subsingleton (r ≼i s) | ⟨h⟩ :=
@@ -131,13 +134,14 @@ local infix ` ≺i `:25 := principal_seg
 namespace principal_seg
 
 instance : has_coe (r ≺i s) (r ≼o s) := ⟨principal_seg.to_order_embedding⟩
+instance : has_coe_to_fun (r ≺i s) := ⟨λ _, α → β, λ f, f⟩
 
 @[simp] theorem coe_fn_mk (f : r ≼o s) (t o) :
   (@principal_seg.mk _ _ r s f t o : α → β) = f := rfl
 
 @[simp] theorem coe_fn_to_order_embedding (f : r ≺i s) : (f.to_order_embedding : α → β) = f := rfl
 
-theorem coe_coe_fn (f : r ≺i s) : ((f : r ≼o s) : α → β) = f := rfl
+@[simp] theorem coe_coe_fn (f : r ≺i s) : ((f : r ≼o s) : α → β) = f := rfl
 
 theorem down' (f : r ≺i s) {b : β} : s b f.top ↔ ∃ a, f a = b :=
 f.down _
@@ -154,7 +158,7 @@ instance has_coe_initial_seg [is_trans β s] : has_coe (r ≺i s) (r ≼i s) :=
 theorem coe_coe_fn' [is_trans β s] (f : r ≺i s) : ((f : r ≼i s) : α → β) = f := rfl
 
 theorem init_iff [is_trans β s] (f : r ≺i s) {a : α} {b : β} : s b (f a) ↔ ∃ a', f a' = b ∧ r a' a :=
-initial_seg.init_iff f
+@initial_seg.init_iff α β r s f a b
 
 theorem irrefl (r : α → α → Prop) [is_well_order α r] (f : r ≺i r) : false :=
 begin
@@ -184,8 +188,9 @@ lt_le_apply _ _ _
 
 def equiv_lt (f : r ≃o s) (g : s ≺i t) : r ≺i t :=
 ⟨@order_embedding.trans _ _ _ r s t f g, g.top, λ c,
- by simp only [g.down', coe_fn_coe_base, order_embedding.trans_apply]; exact
- ⟨λ ⟨b, h⟩, ⟨f.symm b, by simp only [h, order_iso.apply_symm_apply, order_iso.coe_coe_fn]⟩, λ ⟨a, h⟩, ⟨f a, h⟩⟩⟩
+ suffices (∃ (a : β), g a = c) ↔ ∃ (a : α), g (f a) = c, by simpa [g.down],
+ ⟨λ ⟨b, h⟩, ⟨f.symm b, by simp only [h, order_iso.apply_symm_apply, order_iso.coe_coe_fn]⟩,
+  λ ⟨a, h⟩, ⟨f a, h⟩⟩⟩
 
 def lt_equiv {r : α → α → Prop} {s : β → β → Prop} {t : γ → γ → Prop}
   (f : principal_seg r s) (g : s ≃o t) : principal_seg r t :=
@@ -256,7 +261,7 @@ sum.inl ⟨f, classical.some h', classical.some_spec h'⟩
 
 theorem initial_seg.lt_or_eq_apply_left [is_well_order β s]
   (f : r ≼i s) (g : r ≺i s) (a : α) : g a = f a :=
-initial_seg.eq g f a
+@initial_seg.eq α β r s _ g f a
 
 theorem initial_seg.lt_or_eq_apply_right [is_well_order β s]
   (f : r ≼i s) (g : r ≃o s) (a : α) : g a = f a :=
@@ -482,7 +487,7 @@ eq.symm $ quot.sound ⟨order_iso.of_surjective
 
 @[simp] theorem typein_apply {α β} {r : α → α → Prop} {s : β → β → Prop}
   [is_well_order α r] [is_well_order β s] (f : r ≼i s) (a : α) :
-  ordinal.typein s ((f : r ≼o s) a) = ordinal.typein r a :=
+  ordinal.typein s (f a) = ordinal.typein r a :=
 eq.symm $ quotient.sound ⟨order_iso.of_surjective
   (order_embedding.cod_restrict _
     ((subrel.order_embedding _ _).trans f)
@@ -961,7 +966,7 @@ by simp only [le_antisymm_iff, add_le_add_iff_right]
   exact ⟨f punit.star⟩
 end, λ e, by simp only [e, card_zero]⟩
 
-@[simp] theorem type_ne_zero_iff_nonempty [is_well_order α r] : type r ≠ 0 ↔ nonempty α :=
+theorem type_ne_zero_iff_nonempty [is_well_order α r] : type r ≠ 0 ↔ nonempty α :=
 (not_congr (@card_eq_zero (type r))).symm.trans ne_zero_iff_nonempty
 
 @[simp] theorem type_eq_zero_iff_empty [is_well_order α r] : type r = 0 ↔ ¬ nonempty α :=
@@ -1390,7 +1395,8 @@ begin
     [cases H, exact nat.succ_pos _, exact nat.succ_lt_succ H] }
 end
 
-@[simp] theorem one_add_of_omega_le {o} (h : omega ≤ o) : 1 + o = o :=
+@[simp, priority 990]
+theorem one_add_of_omega_le {o} (h : omega ≤ o) : 1 + o = o :=
 by rw [← add_sub_cancel_of_le h, ← add_assoc, one_add_omega]
 
 instance : monoid ordinal.{u} :=
@@ -2255,7 +2261,7 @@ by simp only [le_antisymm_iff, nat_cast_le]
 @[simp] theorem nat_cast_eq_zero {n : ℕ} : (n : ordinal) = 0 ↔ n = 0 :=
 @nat_cast_inj n 0
 
-@[simp] theorem nat_cast_ne_zero {n : ℕ} : (n : ordinal) ≠ 0 ↔ n ≠ 0 :=
+theorem nat_cast_ne_zero {n : ℕ} : (n : ordinal) ≠ 0 ↔ n ≠ 0 :=
 not_congr nat_cast_eq_zero
 
 @[simp] theorem nat_cast_pos {n : ℕ} : (0 : ordinal) < n ↔ 0 < n :=
