@@ -298,13 +298,18 @@ by simp [NT]
 lemma of_ne (x y : β) (NT : φ ≠ ⊥) : x ≠ y ↔ of x ≠ (of y : β*) :=
 by show ¬ x = y ↔ of x ≠ of y; rwa [of_eq]
 
-lemma of_eq_zero [has_zero β] (NT : φ ≠ ⊥) (x : β) : x = 0 ↔ of x = (0 : β*) := of_eq _ _ NT
+lemma of_eq_zero [has_zero β] (NT : φ ≠ ⊥) (x : β) : x = 0 ↔ (x : β*) = (0 : β*) := of_eq _ _ NT
 
-lemma of_ne_zero [has_zero β] (NT : φ ≠ ⊥) (x : β) : x ≠ 0 ↔ of x ≠ (0 : β*) := of_ne _ _ NT
+lemma of_ne_zero [has_zero β] (NT : φ ≠ ⊥) (x : β) : x ≠ 0 ↔ (x : β*) ≠ (0 : β*) := of_ne _ _ NT
 
 @[simp, move_cast] lemma of_zero [has_zero β] : ((0 : β) : β*) = 0 := rfl
 
 @[simp, move_cast] lemma of_add [has_add β] (x y : β) : ((x + y : β) : β*) = x + y := rfl
+
+@[simp, move_cast] lemma of_bit0 [has_add β] (x : β) : ((bit0 x : β) : β*) = bit0 x := rfl
+
+@[simp, move_cast] lemma of_bit1 [has_add β] [has_one β] (x : β) :
+  ((bit1 x : β) : β*) = bit1 x := rfl
 
 @[simp, move_cast] lemma of_neg [has_neg β] (x : β) : ((- x : β) : β*) = - x := rfl
 
