@@ -512,7 +512,9 @@ ext (assume x, and_or_distrib_right)
 
 theorem insert_def (x : α) (s : set α) : insert x s = { y | y = x ∨ y ∈ s } := rfl
 
-@[simp] theorem insert_of_has_insert (x : α) (s : set α) : has_insert.insert x s = insert x s := rfl
+-- local attribute [simp] -- will be redeclared in lattice, TODO: remove in Lean 3.6
+@[simp]
+theorem insert_of_has_insert (x : α) (s : set α) : has_insert.insert x s = insert x s := rfl
 
 @[simp] theorem subset_insert (x : α) (s : set α) : s ⊆ insert x s :=
 assume y ys, or.inr ys
@@ -681,7 +683,8 @@ by finish [ext_iff]
 @[simp] theorem compl_union (s t : set α) : -(s ∪ t) = -s ∩ -t :=
 by finish [ext_iff]
 
-@[simp] theorem compl_compl (s : set α) : -(-s) = s :=
+local attribute [simp] -- Will be generalized to lattices in `lattice.neg_neg`
+theorem compl_compl (s : set α) : -(-s) = s :=
 by finish [ext_iff]
 
 -- ditto

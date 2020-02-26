@@ -206,12 +206,14 @@ match a, b, eq_neg_succ_of_lt_zero Ha, eq_succ_of_zero_lt Hb with
 | ._, ._, ⟨m, rfl⟩, ⟨n, rfl⟩ := neg_succ_lt_zero _
 end
 
-@[simp] protected theorem zero_div : ∀ (b : ℤ), 0 / b = 0
+-- Will be generalized to Euclidean domains.
+protected theorem zero_div : ∀ (b : ℤ), 0 / b = 0
 | 0       := rfl
 | (n+1:ℕ) := rfl
 | -[1+ n] := rfl
 
-@[simp] protected theorem div_zero : ∀ (a : ℤ), a / 0 = 0
+local attribute [simp] -- Will be generalized to Euclidean domains.
+protected theorem div_zero : ∀ (a : ℤ), a / 0 = 0
 | 0       := rfl
 | (n+1:ℕ) := rfl
 | -[1+ n] := rfl
@@ -301,14 +303,17 @@ match b, eq_succ_of_zero_lt bpos with ._, ⟨n, rfl⟩ := rfl end
 @[simp] theorem mod_abs (a b : ℤ) : a % (abs b) = a % b :=
 abs_by_cases (λ i, a % i = a % b) rfl (mod_neg _ _)
 
-@[simp] theorem zero_mod (b : ℤ) : 0 % b = 0 :=
+local attribute [simp] -- Will be generalized to Euclidean domains.
+theorem zero_mod (b : ℤ) : 0 % b = 0 :=
 congr_arg of_nat $ nat.zero_mod _
 
-@[simp] theorem mod_zero : ∀ (a : ℤ), a % 0 = a
+local attribute [simp] -- Will be generalized to Euclidean domains.
+theorem mod_zero : ∀ (a : ℤ), a % 0 = a
 | (m : ℕ) := congr_arg of_nat $ nat.mod_zero _
 | -[1+ m] := congr_arg neg_succ_of_nat $ nat.mod_zero _
 
-@[simp] theorem mod_one : ∀ (a : ℤ), a % 1 = 0
+local attribute [simp] -- Will be generalized to Euclidean domains.
+theorem mod_one : ∀ (a : ℤ), a % 1 = 0
 | (m : ℕ) := congr_arg of_nat $ nat.mod_one _
 | -[1+ m] := show (1 - (m % 1).succ : ℤ) = 0, by rw nat.mod_one; refl
 
@@ -405,7 +410,8 @@ by rw [← zero_add (a * b), add_mul_mod_self, zero_mod]
 @[simp] theorem mul_mod_right (a b : ℤ) : (a * b) % a = 0 :=
 by rw [mul_comm, mul_mod_left]
 
-@[simp] theorem mod_self {a : ℤ} : a % a = 0 :=
+local attribute [simp] -- Will be generalized to Euclidean domains.
+theorem mod_self {a : ℤ} : a % a = 0 :=
 by have := mul_mod_left 1 a; rwa one_mul at this
 
 @[simp] theorem mod_mod_of_dvd (n : int) {m k : int} (h : m ∣ k) : n % k % m = n % m :=
